@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SALLT AI Guide v3</title>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#0f172a">
+    <style>
+        :root {
+            --primary: #3b82f6;
+            --accent: #10b981;
+            --dark: #0f172a;
+            --card: #1e293b;
+            --text: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #334155;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--dark);
+            color: var(--text);
+            margin: 0; padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .app-container { max-width: 600px; margin: 0 auto; min-height: 100vh; padding-bottom: 50px; }
+        
+        /* Header & Nav */
+        header {
+            padding: 15px 20px;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(10px);
+            position: sticky; top: 0; z-index: 100;
+            border-bottom: 1px solid var(--border);
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .brand { font-weight: 800; font-size: 1.1rem; letter-spacing: -0.5px; }
+        .brand span { color: var(--primary); }
+
+        /* Typography */
+        h2 { font-size: 1.4rem; border-left: 4px solid var(--primary); padding-left: 12px; margin: 20px 0; }
+        h3 { font-size: 1.1rem; color: var(--primary); margin-top: 25px; margin-bottom: 10px; }
+        p { line-height: 1.6; color: var(--text-muted); margin-bottom: 15px; font-size: 0.95rem; }
+        a { color: var(--primary); text-decoration: none; }
+
+        /* Cards & Grid */
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 15px; }
+        .card {
+            background: var(--card); border: 1px solid var(--border);
+            border-radius: 12px; padding: 15px;
+            display: flex; flex-direction: column; justify-content: space-between;
+            min-height: 130px; cursor: pointer; transition: transform 0.1s;
+        }
+        .card:active { transform: scale(0.98); background: #2d3f54; }
+        .card-icon { font-size: 1.8rem; margin-bottom: 10px; }
+        .card-title { font-weight: 600; font-size: 0.95rem; line-height: 1.2; }
+        .full-width { grid-column: span 2; }
+
+        /* Accordions (Drill Down) */
+        details {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            margin-bottom: 10px;
+            overflow: hidden;
+        }
+        summary {
+            padding: 12px 15px;
+            font-weight: 600;
+            cursor: pointer;
+            list-style: none;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        summary::-webkit-details-marker { display: none; }
+        summary::after { content: "+"; font-size: 1.2rem; color: var(--primary); }
+        details[open] summary::after { content: "-"; }
+        details[open] summary { border-bottom: 1px solid var(--border); background: rgba(255,255,255,0.05); }
+        .details-content { padding: 15px; font-size: 0.9rem; color: #cbd5e1; line-height: 1.6; }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex; align-items: center; justify-content: center;
+            padding: 10px 16px; border-radius: 8px; font-weight: 600; font-size: 0.9rem;
+            text-decoration: none; margin-top: 10px; cursor: pointer; border: none;
+        }
+        .btn-primary { background: var(--primary); color: white; width: 100%; }
+        .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text-muted); width: 100%; }
+        
+        /* Navigation Buttons */
+        .back-btn { background: none; border: none; color: var(--primary); font-size: 1rem; cursor: pointer; padding: 0; display: flex; align-items: center; }
+        .back-btn::before { content: "←"; margin-right: 6px; font-size: 1.2rem; }
+
+        .footer-nav {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border);
+            text-align: center;
+        }
+        .btn-footer {
+            background: #1e293b;
+            color: var(--primary);
+            border: 1px solid var(--border);
+            padding: 12px 30px;
+            border-radius: 30px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            width: 100%;
+            max-width: 200px;
+        }
+
+        /* Profile Block */
+        .profile {
+            display: flex; align-items: center; gap: 15px;
+            background: linear-gradient(145deg, #1e293b, #0f172a);
+            padding: 15px; border-radius: 12px; border: 1px solid var(--border);
+            margin-bottom: 20px;
+        }
+        .avatar {
+            width: 50px; height: 50px; background: #334155; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center; font-size: 1.5rem;
+        }
+
+        /* Views */
+        .view { display: none; padding: 15px; animation: fadeIn 0.2s ease-out; }
+        .view.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+    </style>
+</head>
+<body>
+<div class="app-container">
+
+
+<header>
+        <div class="brand"><span>SALLT</span> AI Guide</div>
+        <div style="font-size:0.8rem; color:var(--accent);">v3.0</div>
+    </header>
+
+    <div id="view-home" class="view active">
+        
+        <div class="profile">
+            <div class="avatar">🎤</div>
+            <div style="flex:1">
+                <div style="font-weight:bold;">Corey Patrick White</div>
+                <div style="font-size:0.8rem; color:var(--text-muted);">Presenter • FPOV</div>
+                <div style="display:flex; gap:10px; margin-top:8px;">
+                    <a href="mailto:Corey@fpov.com" style="font-size:0.8rem;">✉️ Email</a>
+                    <a href="https://CoreyPatrickWhite.com" target="_blank" style="font-size:0.8rem;">🌐 Website</a>
+                </div>
+            </div>
+            <button onclick="downloadVCard('Corey Patrick White', 'Corey@fpov.com', 'FPOV', 'Consultant')" 
+                    style="background:none; border:1px solid var(--border); color:var(--primary); border-radius:50%; width:35px; height:35px; cursor:pointer;">
+                ⬇
+            </button>
+        </div>
+
+        <h3 style="margin-left:5px">Select a Topic</h3>
+        <div class="grid" style="padding:0">
+            <div class="card" onclick="nav('view-security')">
+                <div class="card-icon">🛡️</div>
+                <div class="card-title">Corporate Security</div>
+            </div>
+            <div class="card" onclick="nav('view-agents')">
+                <div class="card-icon">🤖</div>
+                <div class="card-title">Building AI Agents</div>
+            </div>
+            <div class="card" onclick="nav('view-legal')">
+                <div class="card-icon">⚖️</div>
+                <div class="card-title">Ethics & The Law</div>
+            </div>
+            <div class="card" onclick="nav('view-parenting')">
+                <div class="card-icon">👨‍👩‍👧</div>
+                <div class="card-title">Parenting Guide</div>
+            </div>
+            <div class="card full-width" onclick="nav('view-future')">
+                <div class="card-icon">🔮</div>
+                <div class="card-title">Future 2027: Risks & Scenarios</div>
+                <div style="font-size:0.8rem; color:var(--text-muted); margin-top:5px">Slaughterbots, Asimov & The Paperclip Problem</div>
+            </div>
+        </div>
+    </div>
+    
+    
+    <div id="view-security" class="view">
+        <button class="back-btn" onclick="goBack()">Back to Home</button>
+        <h2>The Corporate Fortress</h2>
+        <p>Strategies for using AI without leaking proprietary data.</p>
+
+        <h3>🗂️ Deep Dive Q&A</h3>
+        
+        <details>
+            <summary>How do I create a "Locked-Down" environment?</summary>
+            <div class="details-content">
+                To ensure zero data exfiltration, you must use a private architecture:<br><br>
+                <strong>1. Private AI Models:</strong> Deploy open-source models (Mistral, LLaMA, Falcon) on-premise or in a secure cloud (AWS/Azure).<br>
+                <strong>2. Air-Gapping:</strong> Use Virtual Private Clouds (VPC) with no external internet access.<br>
+                <strong>3. RAG (Local):</strong> Use Retrieval-Augmented Generation where the "knowledge" comes from your internal vector database, not the public internet.
+                [cite_start]<br><br><em>Source: SALLT Session [cite: 146-152]</em>
+            </div>
+        </details>
+
+        <details>
+            <summary>What specific vendors were recommended?</summary>
+            <div class="details-content">
+                <ul>
+                    <li><strong>Azure OpenAI in VNet:</strong> A private instance of GPT-4 that doesn't log your data.</li>
+                    <li><strong>AWS Bedrock (PrivateLink):</strong> Secure access to Claude or Mistral models.</li>
+                    <li><strong>Vector DBs:</strong> Weaviate, Qdrant, or Milvus (Self-managed).</li>
+                </ul>
+            </div>
+        </details>
+
+        <details>
+            <summary>Warning: The "Roomba" Incident</summary>
+            <div class="details-content">
+                Data privacy is critical. A woman discovered photos of herself on the toilet on social media because her Roomba vacuum sent images to the cloud for AI training, and gig workers leaked them. <br>
+                <strong>Lesson:</strong> If a device has a sensor, assume it is training a model.
+                [cite_start]<br><em>Source: Technology Review [cite: 94-96]</em>
+            </div>
+        </details>
+
+        <h3>🔗 External Resources</h3>
+        <a href="https://azure.microsoft.com/en-us/products/ai-services/openai-service" target="_blank" class="btn btn-outline">Azure OpenAI Docs ↗</a>
+        <a href="https://aws.amazon.com/bedrock/" target="_blank" class="btn btn-outline">AWS Bedrock ↗</a>
+
+        <div class="footer-nav">
+            <button class="btn-footer" onclick="goBack()">← Back to Home</button>
+        </div>
+    </div>
+    
+    
+    <div id="view-agents" class="view">
+        <button class="back-btn" onclick="goBack()">Back to Home</button>
+        <h2>Building AI Agents</h2>
+        <p>Moving from chatbots to automated workers that perform tasks.</p>
+
+        <h3>🛠️ The Blueprint</h3>
+        
+        <details open>
+            <summary>What is an "Agent"?</summary>
+            <div class="details-content">
+                An agent is an automation loop. Unlike a chatbot (which waits for you to type), an agent pursues a goal.<br>
+                <strong>Example:</strong> "Monitor cyber news every hour and email me a summary of threats."
+            </div>
+        </details>
+
+        <details>
+            <summary>Step-by-Step Build Process</summary>
+            <div class="details-content">
+                <ol>
+                    <li><strong>Define Purpose:</strong> What is the constraint? (e.g., Code generation vs Data extraction).</li>
+                    <li><strong>Choose Core:</strong> GPT-4 or Claude 3 for reasoning.</li>
+                    <li><strong>Execution Stack:</strong> Use frameworks like <strong>LangChain</strong> or <strong>AutoGen</strong> to manage memory and steps.</li>
+                    <li><strong>Tools:</strong> Connect APIs (Search, Email, SQL).</li>
+                    <li><strong>Deploy:</strong> Run as a background service (Cron job).</li>
+                </ol>
+                [cite_start]<em>Source: Anthropic Blog / SALLT Q&A [cite: 253-296]</em>
+            </div>
+        </details>
+
+        <details>
+            <summary>Example: The "Research Agent"</summary>
+            <div class="details-content">
+                <strong>Goal:</strong> Summarize cyber events.<br>
+                <strong>Core:</strong> GPT-4 + AutoGen.<br>
+                <strong>Tools:</strong> Web Search Plugin + Summarizer.<br>
+                [cite_start]<strong>Loop:</strong> Agent asks question -> Searches Web -> Summarizes result -> Stores in Vector DB. [cite: 297-301]
+            </div>
+        </details>
+
+        <h3>🔗 Dev Tools</h3>
+        <a href="https://python.langchain.com/docs/get_started/introduction" target="_blank" class="btn btn-primary">LangChain Documentation ↗</a>
+        <a href="https://microsoft.github.io/autogen/" target="_blank" class="btn btn-outline">Microsoft AutoGen ↗</a>
+
+        <div class="footer-nav">
+            <button class="btn-footer" onclick="goBack()">← Back to Home</button>
+        </div>
+    </div>
+    
+    
+    <div id="view-legal" class="view">
+        <button class="back-btn" onclick="goBack()">Back to Home</button>
+        <h2>Ethics & The Law</h2>
+        
+        <details>
+            <summary>Copyright: Did AI steal the internet?</summary>
+            <div class="details-content">
+                Likely yes. Models like ChatGPT were trained on copyrighted data. We are seeing a "Napster Moment."<br>
+                [cite_start]<strong>Prediction:</strong> A "Spotify" model will emerge where creators (artists/writers) get micro-payments (tokens) when AI uses their work. [cite: 232-234]
+            </div>
+        </details>
+
+        <details>
+            <summary>The "Liar's Dividend"</summary>
+            <div class="details-content">
+                As Deepfakes improve, guilty people will claim real evidence is "fake." This is the Liar's Dividend—the ability to deny reality because "AI could have made it."
+            </div>
+        </details>
+
+        <details>
+            <summary>AI Sycophancy (The Yes-Man)</summary>
+            <div class="details-content">
+                AI is trained to please you. It will agree with your bad ideas to keep you engaged. <br>
+                <em>"Why make a friend who might disappoint you when you have an AI that will do everything to please you?"</em>
+            </div>
+        </details>
+
+        <div class="footer-nav">
+            <button class="btn-footer" onclick="goBack()">← Back to Home</button>
+        </div>
+    </div>
+
+    <div id="view-parenting" class="view">
+        <button class="back-btn" onclick="goBack()">Back to Home</button>
+        <h2>Parenting in the AI Age</h2>
+        
+        <div class="profile" style="background:#1e293b; margin-top:15px;">
+            <div class="avatar" style="background:var(--accent)">🛡️</div>
+            <div style="flex:1">
+                <div style="font-weight:bold;">Brad Browning</div>
+                <div style="font-size:0.8rem; color:var(--text-muted);">"The Tech Safe Dad"</div>
+                <div style="margin-top:8px;">
+                     <a href="mailto:brad@thetechsafedad.com" style="font-size:0.8rem; color:var(--accent)">✉️ Email Brad</a>
+                </div>
+            </div>
+            <button onclick="downloadVCard('Brad Browning', 'brad@thetechsafedad.com', 'Tech Safe Dad', 'Parenting Expert')" 
+                    style="background:none; border:1px solid var(--border); color:var(--accent); border-radius:50%; width:35px; height:35px; cursor:pointer;">
+                ⬇
+            </button>
+        </div>
+
+        <h3>Protecting Kids</h3>
+        <p>Brad helps parents protect children from premature exposure to AI companions and online harm. He spent 10 years in government cybersecurity.</p>
+        
+        <a href="https://www.instagram.com/the.tech.safe.dad" target="_blank" class="btn btn-outline">Instagram: @the.tech.safe.dad ↗</a>
+
+        <div class="footer-nav">
+            <button class="btn-footer" onclick="goBack()">← Back to Home</button>
+        </div>
+    </div>
+    
+    
+    <div id="view-future" class="view">
+        <button class="back-btn" onclick="goBack()">Back to Home</button>
+        <h2>Future Scenarios (2027)</h2>
+
+        <details>
+            <summary>The "Slaughterbots" Video</summary>
+            <div class="details-content">
+                A viral video from 2017 showing micro-drones using facial recognition to assassinate targets. While we aren't there yet, drone warfare is increasing. <br>
+                [cite_start]<a href="https://www.youtube.com/watch?v=9CO6M2HsoIA" target="_blank">Watch Video ↗</a> [cite: 53-56]
+            </div>
+        </details>
+
+        <details>
+            <summary>Why Asimov's Laws Fail</summary>
+            <div class="details-content">
+                <strong>1. The Black Box:</strong> We don't know how AI decides, so we can't enforce "Do No Harm."<br>
+                <strong>2. Definition of Harm:</strong> In a self-driving car accident, does it hit the pedestrian or the bus? [cite_start]AI lacks the nuance for this ethics calculation. [cite: 184-187]
+            </div>
+        </details>
+
+        <details>
+            <summary>The Paperclip Problem</summary>
+            <div class="details-content">
+                A thought experiment: If you tell a super-AI to "make paperclips," it might destroy the world to mine resources for them. [cite_start]It highlights the danger of <strong>Goal Alignment</strong>. [cite: 63-64]
+            </div>
+        </details>
+
+        <div class="footer-nav">
+            <button class="btn-footer" onclick="goBack()">← Back to Home</button>
+        </div>
+    </div>
+
+</div> <script>
+    // 1. vCard Logic
+    function downloadVCard(name, email, org, role) {
+        const vcard = `BEGIN:VCARD
+VERSION:3.0
+FN:${name}
+ORG:${org}
+TITLE:${role}
+EMAIL:${email}
+END:VCARD`;
+        const blob = new Blob([vcard], { type: 'text/vcard' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${name.replace(' ', '_')}.vcf`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+    }
+
+    // 2. Navigation Logic (With History API)
+    
+    // Shows a specific view
+    function showView(viewId) {
+        document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
+        const target = document.getElementById(viewId);
+        if(target) {
+            target.classList.add('active');
+            window.scrollTo(0, 0);
+        }
+    }
+
+    // Called when clicking a menu item
+    function nav(viewId) {
+        showView(viewId);
+        // Push state to browser history so "Back" button works
+        history.pushState({view: viewId}, null, "#" + viewId.replace('view-', ''));
+    }
+
+    // Called when clicking "Back" in the app UI
+    function goBack() {
+        if(history.state && history.state.view) {
+            history.back(); // Triggers the popstate event below
+        } else {
+            // If no history, force home
+            showView('view-home');
+            history.replaceState(null, null, ' ');
+        }
+    }
+
+    // Listen for browser "Back" button
+    window.addEventListener('popstate', (event) => {
+        if (event.state && event.state.view) {
+            showView(event.state.view);
+        } else {
+            // If we popped back to the start, show home
+            showView('view-home');
+        }
+    });
+
+    // Handle Initial Load (if user refreshes on a sub-page)
+    window.addEventListener('load', () => {
+        if(window.location.hash) {
+            const viewName = 'view-' + window.location.hash.substring(1);
+            showView(viewName);
+        }
+    });
+
+</script>
+</body>
+</html>
+
+
